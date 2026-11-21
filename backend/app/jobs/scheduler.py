@@ -158,6 +158,17 @@ def job_radar_snapshot(db) -> dict:
     }
 
 
+def job_investdata_sync(db) -> dict:
+    """从 InvestData 同步 A 股日线到本地行情表。
+
+    排在 InvestData 每日 18:30 更新之后。只同步能映射的 A 股标的，
+    海外指数/期货/港股/手工录入的标的没有对应数据源，保持原样。
+    """
+    from app.services.investdata_sync_service import sync_daily_bars
+
+    return sync_daily_bars(db, incremental=True)
+
+
 def job_daily_backup(db) -> dict:
     """每日备份数据库并清理超期文件。"""
     from app.services import backup_service
@@ -264,6 +275,12 @@ JOBS: dict[str, dict] = {
         "trigger": lambda: CronTrigger(day_of_week="mon-fri", hour=16, minute=45),
         "description": "交易日 16:45 生成当日机会快照，供环比与首次发现时间使用",
     },
+    "investdata_sync": {
+        "name": "全市场行情同步（InvestData）",
+        "func": job_investdata_sync,
+        "trigger": lambda: CronTrigger(day_of_week="mon-fri", hour=18, minute=40),
+        "description": "交易日 18:40 从 InvestData 同步 A 股日线（前复权，最近 5 年）",
+    },
     "daily_backup": {
         "name": "数据库备份",
         "func": job_daily_backup,
@@ -277,6 +294,13 @@ JOBS: dict[str, dict] = {
         "description": "每日三次统计模型调用成本并预警",
     },
 }
+
+
+# 行情已切换到 InvestData：默认不再注册东财采集任务（函数保留，改 LEGACY_MARKET_JOBS=1 可恢复）。
+# 新闻采集不受影响——InvestData 没有新闻数据，必须继续走东财。
+if not settings.LEGACY_MARKET_JOBS:
+    JOBS.pop("market_quotes", None)    # 盘中报价：InvestData 为日频，无盘中数据
+    JOBS.pop("market_history", None)   # 日线：已由 investdata_sync 替代
 
 
 def run_job(job_id: str, trigger: str = "manual") -> dict:

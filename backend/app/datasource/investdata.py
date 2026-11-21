@@ -160,6 +160,36 @@ class InvestDataClient:
         return data if isinstance(data, list) else (data.get("items") or [])
 
     # ---------- 行情 ----------
+    # 只使用最近 5 年，与线上库口径一致。
+    # 本地全量库虽有 36 年，但线上只有 5 年——若本地能跑线上跑不了，
+    # 回测结果无法复现，这类"环境差异"比数据少更危险。
+    # 1212 = 线上库实测可用交易日数（2021-11-22 ~ 2026-11-20）。
+    # 用 1250 会回推到 2021-09，比线上早 2 个月，导致本地能跑线上跑不了。
+    MAX_HISTORY_DAYS = 1212
+    MAX_SPAN_DAYS = 3600  # API 限制单次区间 ≤3650 天，留余量
+
+    def _fetch_range(self, instrument_id: str, start: str, end: str,
+                     adjustment: str) -> list[dict]:
+        """抓取一个日期区间（内部翻页）。区间须 ≤ MAX_SPAN_DAYS。"""
+        items: list[dict] = []
+        page = 1
+        while page <= 6:
+            data = self._get(
+                "/api/v1/bars/daily",
+                instrument_id=instrument_id,
+                adjustment_type=adjustment,
+                start_date=start,
+                end_date=end,
+                page_size=1000,
+                page=page,
+            )
+            chunk = data.get("items") or []
+            items.extend(chunk)
+            if len(chunk) < 1000:
+                break
+            page += 1
+        return items
+
     def bars(
         self,
         instrument_id: str,
@@ -175,6 +205,8 @@ class InvestDataClient:
         """
         if adjustment not in ("raw", "qfq", "hfq"):
             raise ValueError(f"不支持的复权口径: {adjustment}")
+        # 硬性上限：最多 5 年，超出部分不取（本地与线上保持一致）
+        days = min(int(days), self.MAX_HISTORY_DAYS)
 
         # 1) 探明覆盖范围（只取 1 条，代价很小）
         probe = self._get(
@@ -198,24 +230,15 @@ class InvestDataClient:
         end_dt = date.fromisoformat(last)
         start_dt = end_dt - timedelta(days=int(days * 1.7) + 15)
 
-        # 3) 区间请求，必要时翻页
+        # 3) 区间请求。API 单次限制 3650 天，长历史需分段（本地全量库到 1990 年）
         items: list[dict] = []
-        page = 1
-        while page <= 5:
-            data = self._get(
-                "/api/v1/bars/daily",
-                instrument_id=instrument_id,
-                adjustment_type=adjustment,
-                start_date=start_dt.isoformat(),
-                end_date=end_dt.isoformat(),
-                page_size=1000,
-                page=page,
-            )
-            chunk = data.get("items") or []
-            items.extend(chunk)
-            if len(chunk) < 1000:
-                break
-            page += 1
+        seg_end = end_dt
+        while seg_end >= start_dt:
+            seg_start = max(start_dt, seg_end - timedelta(days=self.MAX_SPAN_DAYS))
+            items.extend(self._fetch_range(
+                instrument_id, seg_start.isoformat(), seg_end.isoformat(), adjustment
+            ))
+            seg_end = seg_start - timedelta(days=1)
 
         if not items:
             # 区间内无数据（极端停牌），退回全量取尾部

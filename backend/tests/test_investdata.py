@@ -135,8 +135,21 @@ def test_batch_tolerates_individual_failure(client):
 
 
 def test_industry_lookup_and_members(client):
-    lst = client.industries(keyword="半导体", limit=5)
-    assert lst
-    target = next((x for x in lst if x.get("instrument_type") == "industry_index"), lst[0])
+    """按代码检索板块。
+
+    不用中文名——本地全量库有 1171/1727 个板块 name 为 null（线上已补齐，
+    本地尚未跑该迁移）。按 symbol 检索两边都成立，测试不会因环境差异失败。
+    """
+    lst = client.industries(keyword="881319", limit=5)
+    assert lst, "按代码 881319（半导体）应能检索到板块"
+    target = next((x for x in lst if x.get("symbol") == "881319"), lst[0])
+    assert target["instrument_type"] in ("industry_index", "concept_index")
     members = client.industry_members(target["instrument_id"], limit=500)
     assert len(members) > 10
+
+
+def test_history_is_capped_to_five_years(client):
+    """无论请求多少根，最多返回 5 年（与线上口径一致）。"""
+    iid = client.resolve("600519", instrument_type="stock")["instrument_id"]
+    s = client.bars(iid, days=8000, adjustment="qfq")
+    assert s.length <= 1212, f"返回 {s.length} 根，超过 5 年上限"

@@ -61,6 +61,8 @@ class Settings(BaseSettings):
     INVESTDATA_ENABLED: int = 0
     INVESTDATA_BASE_URL: str = "http://127.0.0.1:8100"
     INVESTDATA_TIMEOUT: float = 60.0
+    # 旧行情任务（东财日线/盘中报价）是否保留。0=停用，行情全部走 InvestData
+    LEGACY_MARKET_JOBS: int = 0
 
     WEBHOOK_URL: str = ""
     SMTP_HOST: str = ""

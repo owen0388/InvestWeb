@@ -12,8 +12,39 @@ from sqlalchemy.orm import Session
 from app.models.entities import MacroObservation, MarketObservation
 
 
+# 行情来源优先级：InvestData 为全市场主源（5 年前复权），旧源仅在其缺失时兜底
+SOURCE_PRIORITY = ("investdata_kline", "eastmoney_kline", "tencent_kline", "sina_kline", "sina_quote")
+
+
 def load_close_series(db: Session, symbol: str, limit: int = 300) -> pd.Series:
-    """优先使用东方财富日线（收盘、前复权），不足时回退到新浪快照。"""
+    """取收盘价序列。
+
+    来源选择规则：
+    1. 若存在 InvestData 数据（全市场主源，1212 根前复权），直接用它，取满 limit
+    2. 否则回退到旧逻辑：按来源分组选记录最多的一组（海外指数、期货等仍走旧源）
+
+    为什么不能沿用「先取 limit*3 行再分组」：多来源同日并存时，
+    这些行会被几个来源分薄，导致实际可用长度远小于 limit
+    （实测 300 根请求只拿到 236 根）。
+    """
+    rows = db.execute(
+        select(MarketObservation.trade_date, MarketObservation.close, MarketObservation.source_code)
+        .where(
+            MarketObservation.symbol == symbol,
+            MarketObservation.close.is_not(None),
+            MarketObservation.source_code == SOURCE_PRIORITY[0],
+        )
+        .order_by(MarketObservation.trade_date.desc())
+        .limit(limit)
+    ).all()
+
+    if rows:
+        data: dict[date, float] = {}
+        for trade_date, close, _src in reversed(rows):
+            data[trade_date] = float(close)
+        return pd.Series(data).sort_index().tail(limit)
+
+    # ---- 回退：旧来源（无 InvestData 覆盖的标的）----
     rows = db.execute(
         select(MarketObservation.trade_date, MarketObservation.close, MarketObservation.source_code)
         .where(
@@ -25,7 +56,6 @@ def load_close_series(db: Session, symbol: str, limit: int = 300) -> pd.Series:
     ).all()
     if not rows:
         return pd.Series(dtype="float64")
-    # 同一品种可能来自多个来源（东方财富/腾讯/新浪/快照），选数据最完整的一组
     grouped: dict[str, list] = {}
     for row in rows:
         grouped.setdefault(row[2], []).append(row)

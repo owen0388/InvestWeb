@@ -161,6 +161,9 @@ class MarketObservation(Base):
     instrument_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
     symbol: Mapped[str] = mapped_column(String(32), index=True)
     trade_date: Mapped[date] = mapped_column(Date, index=True)
+    # Phase 1：来源与复权口径。旧数据为 legacy_em / qfq_unverified（当时未记录，无法自证）
+    source_provider: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    adjustment_type: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
     open: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     high: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     low: Mapped[Optional[float]] = mapped_column(Float, nullable=True)

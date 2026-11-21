@@ -28,7 +28,7 @@ from app.models.entities import (
 
 # scope -> (展示名, 预计秒数, 说明)
 SCOPES: dict[str, tuple[str, int, str]] = {
-    "quotes": ("行情快照", 15, "刷新资产目录 61 个品种的最新价"),
+    "quotes": ("行情同步", 40, "从 InvestData 同步 A 股日线到本地（替代原东财报价）"),
     "universe": ("ETF 候选池", 280, "重拉全市场 1,680 只 ETF 并重算准入门槛（约 4–5 分钟）"),
     "quality": ("候选池日线与质量分", 180, "为候选池补日线、取净值、重算质量分（约 2–3 分钟）"),
     "radar": ("雷达快照", 10, "按最新数据重算机会并写入当日快照"),
@@ -177,14 +177,19 @@ def plan(scope: str) -> list[str]:
 
 def run_scope(db: Session, scope: str) -> dict:
     """同步执行一个刷新步骤。调用方负责放进后台任务。"""
-    from app.services.collector_service import run_market_quotes
     from app.services.etf_history_service import refresh_quality
+    from app.services.investdata_sync_service import sync_daily_bars
     from app.services.opportunity_radar_service import build_daily
     from app.services.universe_service import refresh_universe
 
     if scope == "quotes":
-        result = run_market_quotes(db, trigger="manual")
-        return {"scope": scope, "message": result.message, "records": result.records}
+        # 行情主源已切到 InvestData，不再调用东财报价
+        stats = sync_daily_bars(db, incremental=True)
+        return {
+            "scope": scope,
+            "message": f"同步 {stats['synced']} 个标的，写入 {stats['rows_inserted']} 行",
+            "records": stats["rows_inserted"],
+        }
     if scope == "universe":
         return {"scope": scope, **refresh_universe(db)}
     if scope == "quality":

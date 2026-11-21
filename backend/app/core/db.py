@@ -70,6 +70,9 @@ COLUMN_PATCHES: list[tuple[str, str, str]] = [
     ("etf_universe", "quality_confidence", "FLOAT"),
     ("etf_universe", "quality_breakdown", "JSON"),
     ("etf_universe", "premium_basis", "VARCHAR(16)"),
+    # Phase 1：行情来源与复权口径。旧数据无法自证口径，标记为 legacy_em
+    ("market_observations", "source_provider", "VARCHAR(32)"),
+    ("market_observations", "adjustment_type", "VARCHAR(8)"),
 ]
 
 
