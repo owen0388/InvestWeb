@@ -14,6 +14,7 @@ amount_basis 保持 "1d" 并在页面标注；20 日均额留待统一日线口�
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 from datetime import date
 from typing import Optional
 
@@ -87,90 +88,157 @@ def _record_source_runs(db: Session, per_source: dict[str, int]) -> None:
     db.commit()
 
 
+def _load_via_investdata(candidates: list, days: int) -> dict:
+    """用 InvestData 取日线、用天天基金取净值与规模。
+
+    这是摆脱 push2his 的路径：push2his 高频会被封 IP，
+    而 fund.eastmoney.com 是独立域名，实测可用。
+    """
+    from app.datasource import get_repository
+    from app.providers.tiantian_fund import TiantianFundProvider
+
+    repo = get_repository()
+    fund = TiantianFundProvider()
+    out: dict[str, dict] = {}
+
+    for row in candidates:
+        code = row.code
+        bars = []
+        try:
+            iid = repo.resolve(code, instrument_type="etf")
+            series = repo.bars(iid, days=days, adjustment="qfq")
+            # InvestData 的 trade_date 是字符串，而净值序列的键是 date 对象。
+            # 不统一类型，折溢价就永远匹配不上（实测 premium 会全是 None）。
+            bars = [
+                replace(b, trade_date=date.fromisoformat(str(b.trade_date)))
+                if not isinstance(b.trade_date, date) else b
+                for b in series.bars
+            ]
+        except Exception as exc:  # noqa: BLE001
+            out[code] = {"bars": [], "navs": [], "scale": None,
+                         "error": f"行情失败: {str(exc)[:60]}"}
+            continue
+
+        info = {"bars": bars, "navs": [], "scale": None, "error": None}
+        if row.category != "money":
+            nav = fund.fetch(code)
+            if nav.get("ok"):
+                info["navs"] = nav["navs"]
+                info["scale"] = nav.get("scale")
+            else:
+                info["error"] = f"净值失败: {nav.get('error')}"
+        out[code] = info
+
+    fund.close()
+    return out
+
+
 def refresh_quality(
     db: Session,
     bar_limit: int = 260,
     concurrency: int = 4,
     persist_bars: bool = True,
+    prefer: str = "investdata",
 ) -> dict:
-    """补齐候选池历史并计算质量分。"""
+    """补齐候选池历史并计算质量分。
+
+    prefer="investdata"（默认）：日线走 InvestData，净值与规模走天天基金。
+    prefer="eastmoney"：旧路径，日线走 eastmoney_kline、净值走 FundNavProvider。
+    push2his 高频会被封 IP，因此默认不再使用它。
+    """
     candidates = db.scalars(
         select(EtfUniverse).where(EtfUniverse.status == "candidate")
     ).all()
     if not candidates:
         return {"ok": False, "message": "候选池为空，请先刷新 ETF 候选池", "scored": 0}
 
-    kline = EastmoneyKlineProvider()
-    nav = FundNavProvider()
-    semaphore = asyncio.Semaphore(concurrency)
-
-    async def run_all():
-        return await asyncio.gather(
-            *[
-                _fetch_one(
-                    kline,
-                    nav,
-                    row.symbol,
-                    row.code,
-                    bar_limit,
-                    semaphore,
-                    want_nav=row.category != "money",
-                )
-                for row in candidates
-            ]
-        )
-
-    fetched = asyncio.run(run_all())
-
     bars_by_symbol: dict[str, list] = {}
     source_by_symbol: dict[str, str] = {}
     navs_by_code: dict[str, dict[date, float]] = {}
+    scale_by_code: dict[str, float] = {}
     errors: list[str] = []
     inserted = 0
     # 按「本次实际拉取量」统计，而不是「新增写入量」：
     # 幂等重跑时 inserted=0，若按写入量统计，来源状态会永远停在 idle。
     used_by_source: dict[str, int] = {}
 
-    for (symbol, bars, navs, source_code, error), row in zip(fetched, candidates):
-        if bars:
-            bars_by_symbol[symbol] = bars
-            # 记录真实来源（东方财富/腾讯/新浪），不写任务名
-            source_by_symbol[symbol] = source_code
-            used_by_source[source_code] = used_by_source.get(source_code, 0) + len(bars)
-        navs_by_code[row.code] = {d: v for d, v in navs}
-        if error:
-            errors.append(f"{row.code}: {error}")
+    if prefer == "investdata":
+        loaded = _load_via_investdata(candidates, bar_limit)
+        for row in candidates:
+            info = loaded.get(row.code) or {}
+            bars = info.get("bars") or []
+            if bars:
+                bars_by_symbol[row.symbol] = bars
+                source_by_symbol[row.symbol] = "investdata_kline"
+                used_by_source["investdata_kline"] = used_by_source.get("investdata_kline", 0) + len(bars)
+            navs_by_code[row.code] = {d: v for d, v in (info.get("navs") or [])}
+            if info.get("scale"):
+                scale_by_code[row.code] = info["scale"]
+            if info.get("error"):
+                errors.append(f"{row.code}: {info['error']}")
+    else:
+        kline = EastmoneyKlineProvider()
+        nav = FundNavProvider()
+        semaphore = asyncio.Semaphore(concurrency)
+
+        async def run_all():
+            return await asyncio.gather(
+                *[
+                    _fetch_one(
+                        kline, nav, row.symbol, row.code, bar_limit,
+                        semaphore, want_nav=row.category != "money",
+                    )
+                    for row in candidates
+                ]
+            )
+
+        fetched = asyncio.run(run_all())
+        for (symbol, bars, navs, source_code, error), row in zip(fetched, candidates):
+            if bars:
+                bars_by_symbol[symbol] = bars
+                source_by_symbol[symbol] = source_code
+                used_by_source[source_code] = used_by_source.get(source_code, 0) + len(bars)
+            navs_by_code[row.code] = {d: v for d, v in navs}
+            if error:
+                errors.append(f"{row.code}: {error}")
 
     if persist_bars:
+        from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
         for symbol, bars in bars_by_symbol.items():
-            existing = set(
-                db.scalars(
-                    select(MarketObservation.trade_date).where(
-                        MarketObservation.symbol == symbol
-                    )
-                ).all()
-            )
+            src = source_by_symbol.get(symbol, "investdata_kline")
+            rows = []
             for bar in bars:
-                if bar.trade_date in existing:
-                    continue
-                db.add(
-                    MarketObservation(
-                        instrument_id=None,
-                        symbol=symbol,
-                        trade_date=bar.trade_date,
-                        open=bar.open,
-                        high=bar.high,
-                        low=bar.low,
-                        close=bar.close,
-                        volume=bar.volume,
-                        data_type="close",
-                        currency="CNY",
-                        source_code=source_by_symbol.get(symbol, "eastmoney_kline"),
-                        source_url="",
-                        observed_at=now_cn(),
-                    )
-                )
-                inserted += 1
+                # InvestData 的 trade_date 是字符串，东财是 date，统一成 date
+                td = bar.trade_date
+                if not isinstance(td, date):
+                    td = date.fromisoformat(str(td))
+                rows.append({
+                    "instrument_id": None,
+                    "symbol": symbol,
+                    "trade_date": td,
+                    "open": bar.open,
+                    "high": bar.high,
+                    "low": bar.low,
+                    "close": bar.close,
+                    "volume": getattr(bar, "volume", None),
+                    "data_type": "close",
+                    "currency": "CNY",
+                    "source_code": src,
+                    "source_url": "",
+                    "observed_at": now_cn(),
+                    "source_provider": "investdata" if src == "investdata_kline" else "legacy_em",
+                    "adjustment_type": "qfq",
+                })
+            if not rows:
+                continue
+            stmt = sqlite_insert(MarketObservation).values(rows)
+            stmt = stmt.on_conflict_do_update(
+                index_elements=["symbol", "trade_date", "source_code"],
+                set_={"close": stmt.excluded.close, "observed_at": stmt.excluded.observed_at},
+            )
+            db.execute(stmt)
+            inserted += len(rows)
         db.commit()
 
     # 组装质量分输入：日线用于折溢价与历史长度，成交额沿用快照的精确值
@@ -184,13 +252,24 @@ def refresh_quality(
                 [(bar.trade_date, bar.close) for bar in bars],
                 navs_by_code.get(row.code, {}),
             )
-        row.amount_20d = row.amount  # 口径仍是 1 日，字段保留供后续升级
-        row.amount_basis = "1d"
+        # 成交额：优先用日线近 20 日均值（比单日快照稳定），无日线时退回快照值
+        amounts = [getattr(b, "amount", None) for b in bars[-20:]]
+        amounts = [a for a in amounts if a]
+        if amounts:
+            row.amount_20d = sum(amounts) / len(amounts)
+            row.amount_basis = "20d"
+        else:
+            row.amount_20d = row.amount
+            row.amount_basis = "1d"
+        # 规模：天天基金季度规模（亿元），优先于 etf_universe 里的旧值
+        scale = scale_by_code.get(row.code)
+        if scale:
+            row.mktcap = scale
         items.append(
             {
                 "code": row.code,
                 "category": row.category,
-                "amount_20d": row.amount,
+                "amount_20d": row.amount_20d,
                 "amount_basis": row.amount_basis,
                 "mktcap": row.mktcap,
                 "premium_median_abs": premium,
