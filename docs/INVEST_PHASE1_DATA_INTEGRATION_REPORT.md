@@ -597,4 +597,90 @@ P1 评分做出来**先别急着用**，跑一次五分组检验：
 
 ---
 
-**Phase 1 完成。未部署生产，等待下一步指令。**
+
+## 十四、生产部署记录（2026-11-21 23:15）
+
+### 14.1 部署前备份
+
+| 项 | 路径 |
+| --- | --- |
+| 数据库 | `/opt/investweb/data/backups/invest-pre-phase1-deploy-20261121-231447.db` |
+| 代码 | `/root/investweb-code-20261121-231447.tgz`（859K） |
+
+### 14.2 配置变更（`.env` 追加）
+
+```ini
+INVESTDATA_ENABLED=1
+INVESTDATA_BASE_URL=http://127.0.0.1:8100
+INVESTDATA_TIMEOUT=60
+LEGACY_MARKET_JOBS=0        # 停用东财 market_quotes / market_history
+```
+
+### 14.3 结构变更
+
+服务重启时 `init_db()` 自动执行：
+
+```
+CREATE TABLE market_instruments    （10,525 条）
+CREATE TABLE market_sync_logs
+ALTER TABLE market_observations ADD COLUMN source_provider
+ALTER TABLE market_observations ADD COLUMN adjustment_type
+```
+
+表总数 28 → 30。**未修改任何现有表的字段**。
+
+### 14.4 首次同步结果
+
+```
+全市场标的：10,525 条，0.9 秒
+  stock 5,922 / etf 2,876 / index 801 / industry 467 / concept 459
+
+A 股行情：40 只标的，48,463 行，20.7 秒
+旧数据标记：102,714 行 → legacy_em / qfq_unverified
+
+ETF 质量分（新源）：227 只全部评分，49 秒
+  分数范围 8.0 ~ 92.2，≥40 分 145 只
+  前三：159915(92.2) / 511880(92.1) / 510300(90.4)
+  错误 4 只（589 系列，InvestData 未收录）
+```
+
+### 14.5 验证结果
+
+| 项 | 结果 |
+| --- | --- |
+| 服务 | active |
+| 定时任务 | 14 个（含 investdata_sync，不含 market_quotes，保留 news_collect） |
+| 外网首页 | https://invest.mengrengjiu.com/ → 200 |
+| `/api/health` | 200 |
+| `/api/opportunity-radar/daily` | 200，正常输出 |
+| FaceSeek | https://www.mengrengjiu.com/ → 200（未受影响） |
+
+### 14.6 回滚方式
+
+```bash
+# 1. 恢复数据库
+cp /opt/investweb/data/backups/invest-pre-phase1-deploy-20261121-231447.db \
+   /opt/investweb/data/invest.db
+
+# 2. 恢复代码
+tar xzf /root/investweb-code-20261121-231447.tgz -C /opt/investweb
+
+# 3. 回退配置（删除 .env 中的 INVESTDATA_* 与 LEGACY_MARKET_JOBS 四行）
+
+# 4. 重启
+systemctl restart investweb
+```
+
+### 14.7 上线后的观察点
+
+| 项 | 关注什么 |
+| --- | --- |
+| 周一 18:40 | `investdata_sync` 首次自动执行是否成功 |
+| 周一 16:35 | `etf_quality` 用新源（InvestData + 天天基金）是否稳定 |
+| 天天基金 | 249 只 × 500KB ≈ 124MB/天，是否触发限流 |
+| 东财新闻 | 继续保留，仍需可用 |
+
+
+---
+
+**Phase 1 完成，已部署生产并通过验证。等待下一步指令。**
