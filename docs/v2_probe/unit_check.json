@@ -1,0 +1,475 @@
+{
+ "samples": [
+  {
+   "type": "stock",
+   "symbol": "920000",
+   "date": "2026-11-20",
+   "close": 9.56,
+   "volume": 378154,
+   "amount": 3653038.0,
+   "turnover": 0.6566,
+   "avg_price": 9.6602,
+   "avg_vs_close": 1.0105,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920001",
+   "date": "2026-11-20",
+   "close": 8.86,
+   "volume": 1067527,
+   "amount": 9639626.0,
+   "turnover": 1.1854,
+   "avg_price": 9.0299,
+   "avg_vs_close": 1.0192,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920002",
+   "date": "2026-11-20",
+   "close": 40.44,
+   "volume": 953654,
+   "amount": 39801980.0,
+   "turnover": 2.1384,
+   "avg_price": 41.7363,
+   "avg_vs_close": 1.0321,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920003",
+   "date": "2026-11-20",
+   "close": 11.71,
+   "volume": 400491,
+   "amount": 4810297.0,
+   "turnover": 2.0573,
+   "avg_price": 12.011,
+   "avg_vs_close": 1.0257,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920005",
+   "date": "2026-11-20",
+   "close": 21.03,
+   "volume": 1299418,
+   "amount": 28954086.0,
+   "turnover": 3.3917,
+   "avg_price": 22.2823,
+   "avg_vs_close": 1.0596,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920006",
+   "date": "2026-11-20",
+   "close": 16.27,
+   "volume": 2168499,
+   "amount": 35850600.0,
+   "turnover": 4.5369,
+   "avg_price": 16.5324,
+   "avg_vs_close": 1.0161,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920007",
+   "date": "2026-11-20",
+   "close": 28.7,
+   "volume": 542114,
+   "amount": 15747179.0,
+   "turnover": 4.0138,
+   "avg_price": 29.0477,
+   "avg_vs_close": 1.0121,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920008",
+   "date": "2026-11-20",
+   "close": 14.59,
+   "volume": 573186,
+   "amount": 8633205.0,
+   "turnover": 1.6824,
+   "avg_price": 15.0618,
+   "avg_vs_close": 1.0323,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920009",
+   "date": "2026-11-20",
+   "close": 24.4,
+   "volume": 327937,
+   "amount": 8023058.5,
+   "turnover": 0.6748,
+   "avg_price": 24.4652,
+   "avg_vs_close": 1.0027,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920010",
+   "date": "2026-11-20",
+   "close": 7.28,
+   "volume": 4808903,
+   "amount": 36213708.0,
+   "turnover": 2.7602,
+   "avg_price": 7.5306,
+   "avg_vs_close": 1.0344,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920011",
+   "date": "2026-11-20",
+   "close": 15.19,
+   "volume": 681380,
+   "amount": 10525786.0,
+   "turnover": 3.6633,
+   "avg_price": 15.4477,
+   "avg_vs_close": 1.017,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920012",
+   "date": "2026-11-20",
+   "close": 41.01,
+   "volume": 1591914,
+   "amount": 68246544.0,
+   "turnover": 8.2493,
+   "avg_price": 42.8707,
+   "avg_vs_close": 1.0454,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920014",
+   "date": "2026-11-20",
+   "close": 7.4,
+   "volume": 497313,
+   "amount": 3731298.25,
+   "turnover": 0.7636,
+   "avg_price": 7.5029,
+   "avg_vs_close": 1.0139,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920015",
+   "date": "2026-11-20",
+   "close": 37.28,
+   "volume": 1901886,
+   "amount": 71835848.0,
+   "turnover": 1.4555,
+   "avg_price": 37.7708,
+   "avg_vs_close": 1.0132,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920016",
+   "date": "2026-11-20",
+   "close": 10.29,
+   "volume": 562589,
+   "amount": 5896587.0,
+   "turnover": 1.6432,
+   "avg_price": 10.4812,
+   "avg_vs_close": 1.0186,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920017",
+   "date": "2026-11-20",
+   "close": 11.13,
+   "volume": 3780652,
+   "amount": 43318000.0,
+   "turnover": 3.0701,
+   "avg_price": 11.4578,
+   "avg_vs_close": 1.0295,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920018",
+   "date": "2026-11-20",
+   "close": 13.79,
+   "volume": 1051347,
+   "amount": 14656748.0,
+   "turnover": 1.6059,
+   "avg_price": 13.9409,
+   "avg_vs_close": 1.0109,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920019",
+   "date": "2026-11-20",
+   "close": 12.25,
+   "volume": 960588,
+   "amount": 11886623.0,
+   "turnover": 0.5734,
+   "avg_price": 12.3743,
+   "avg_vs_close": 1.0101,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920020",
+   "date": "2026-11-20",
+   "close": 12.52,
+   "volume": 281121,
+   "amount": 3601592.75,
+   "turnover": 0.5056,
+   "avg_price": 12.8115,
+   "avg_vs_close": 1.0233,
+   "quality": "PASS"
+  },
+  {
+   "type": "stock",
+   "symbol": "920021",
+   "date": "2026-11-20",
+   "close": 7.8,
+   "volume": 31046846,
+   "amount": 243654336.0,
+   "turnover": 12.5414,
+   "avg_price": 7.848,
+   "avg_vs_close": 1.0061,
+   "quality": "PASS"
+  },
+  {
+   "type": "etf",
+   "id": "84e6709a",
+   "error": "无数据"
+  },
+  {
+   "type": "etf",
+   "id": "a89e7ef8",
+   "error": "无数据"
+  },
+  {
+   "type": "etf",
+   "id": "03d7164b",
+   "error": "无数据"
+  },
+  {
+   "type": "etf",
+   "id": "0a7adc3a",
+   "error": "无数据"
+  },
+  {
+   "type": "etf",
+   "id": "dbc1429c",
+   "error": "无数据"
+  },
+  {
+   "type": "etf",
+   "id": "c0bce8ab",
+   "error": "无数据"
+  },
+  {
+   "type": "etf",
+   "id": "d1665bb1",
+   "error": "无数据"
+  },
+  {
+   "type": "etf",
+   "id": "766c1ccb",
+   "error": "无数据"
+  },
+  {
+   "type": "etf",
+   "id": "4a86f1de",
+   "error": "无数据"
+  },
+  {
+   "type": "etf",
+   "id": "ad9433a0",
+   "error": "无数据"
+  },
+  {
+   "type": "index",
+   "symbol": "899050",
+   "date": "2026-11-20",
+   "close": 759.9,
+   "volume": 567304700,
+   "amount": 9122447360.0,
+   "turnover": null,
+   "avg_price": 16.0803,
+   "avg_vs_close": 0.0212,
+   "quality": "PASS"
+  },
+  {
+   "type": "index",
+   "symbol": "899601",
+   "date": "2026-11-20",
+   "close": 1345.35,
+   "volume": 103035500,
+   "amount": 2399975680.0,
+   "turnover": null,
+   "avg_price": 23.2927,
+   "avg_vs_close": 0.0173,
+   "quality": "PASS"
+  },
+  {
+   "type": "index",
+   "symbol": "000001",
+   "date": "2026-11-20",
+   "close": 3533.79,
+   "volume": 49971172700,
+   "amount": 702573838336.0,
+   "turnover": null,
+   "avg_price": 14.0596,
+   "avg_vs_close": 0.004,
+   "quality": "PASS"
+  },
+  {
+   "type": "index",
+   "symbol": "000002",
+   "date": "2026-11-20",
+   "close": 3705.32,
+   "volume": 49942895600,
+   "amount": 702210572288.0,
+   "turnover": null,
+   "avg_price": 14.0603,
+   "avg_vs_close": 0.0038,
+   "quality": "PASS"
+  },
+  {
+   "type": "index",
+   "symbol": "000003",
+   "date": "2026-11-20",
+   "close": 263.55,
+   "volume": 21410800,
+   "amount": 131978216.0,
+   "turnover": null,
+   "avg_price": 6.1641,
+   "avg_vs_close": 0.0234,
+   "quality": "PASS"
+  },
+  {
+   "type": "industry_index",
+   "symbol": "881001",
+   "date": "2026-11-20",
+   "close": 2282.88,
+   "volume": 1147104400,
+   "amount": 9182583808.0,
+   "turnover": null,
+   "avg_price": 8.005,
+   "avg_vs_close": 0.0035,
+   "quality": "PASS"
+  },
+  {
+   "type": "industry_index",
+   "symbol": "881002",
+   "date": "2026-11-20",
+   "close": 2596.75,
+   "volume": 718663000,
+   "amount": 7723901952.0,
+   "turnover": null,
+   "avg_price": 10.7476,
+   "avg_vs_close": 0.0041,
+   "quality": "PASS"
+  },
+  {
+   "type": "industry_index",
+   "symbol": "881003",
+   "date": "2026-11-20",
+   "close": 2954.71,
+   "volume": 485508400,
+   "amount": 6121664000.0,
+   "turnover": null,
+   "avg_price": 12.6088,
+   "avg_vs_close": 0.0043,
+   "quality": "PASS"
+  },
+  {
+   "type": "industry_index",
+   "symbol": "881004",
+   "date": "2026-11-20",
+   "close": 1322.5,
+   "volume": 233154600,
+   "amount": 1602237952.0,
+   "turnover": null,
+   "avg_price": 6.872,
+   "avg_vs_close": 0.0052,
+   "quality": "PASS"
+  },
+  {
+   "type": "industry_index",
+   "symbol": "881005",
+   "date": "2026-11-20",
+   "close": 380.84,
+   "volume": 428441400,
+   "amount": 1458681728.0,
+   "turnover": null,
+   "avg_price": 3.4046,
+   "avg_vs_close": 0.0089,
+   "quality": "PASS"
+  },
+  {
+   "type": "concept_index",
+   "symbol": "880081",
+   "date": "2026-11-20",
+   "close": 1389.73,
+   "volume": 86933700,
+   "amount": 12037806080.0,
+   "turnover": null,
+   "avg_price": 138.4711,
+   "avg_vs_close": 0.0996,
+   "quality": "PASS"
+  },
+  {
+   "type": "concept_index",
+   "symbol": "880082",
+   "date": "2026-11-20",
+   "close": 475.74,
+   "volume": 158820000,
+   "amount": 1153805824.0,
+   "turnover": null,
+   "avg_price": 7.2649,
+   "avg_vs_close": 0.0153,
+   "quality": "PASS"
+  },
+  {
+   "type": "concept_index",
+   "symbol": "880201",
+   "date": "2026-11-20",
+   "close": 680.93,
+   "volume": 1650393900,
+   "amount": 8178852864.0,
+   "turnover": null,
+   "avg_price": 4.9557,
+   "avg_vs_close": 0.0073,
+   "quality": "PASS"
+  },
+  {
+   "type": "concept_index",
+   "symbol": "880202",
+   "date": "2026-11-20",
+   "close": 800.19,
+   "volume": 1524114100,
+   "amount": 10701837312.0,
+   "turnover": null,
+   "avg_price": 7.0217,
+   "avg_vs_close": 0.0088,
+   "quality": "PASS"
+  },
+  {
+   "type": "concept_index",
+   "symbol": "880203",
+   "date": "2026-11-20",
+   "close": 681.64,
+   "volume": 1267467700,
+   "amount": 6978908160.0,
+   "turnover": null,
+   "avg_price": 5.5062,
+   "avg_vs_close": 0.0081,
+   "quality": "PASS"
+  }
+ ],
+ "summary": {}
+}

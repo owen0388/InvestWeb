@@ -56,6 +56,12 @@ class Settings(BaseSettings):
     AUTH_USER: str = "admin"
     AUTH_PASSWORD: str = ""
 
+    # InvestData 全市场数据服务（Phase 1）
+    # 默认关闭：未部署或未建隧道时不拖累现有功能
+    INVESTDATA_ENABLED: int = 0
+    INVESTDATA_BASE_URL: str = "http://127.0.0.1:8100"
+    INVESTDATA_TIMEOUT: float = 60.0
+
     WEBHOOK_URL: str = ""
     SMTP_HOST: str = ""
     SMTP_PORT: int = 465

@@ -90,6 +90,8 @@ def _ensure_columns() -> None:
 def init_db() -> None:
     # 先导入模型以完成注册
     from app.models import entities  # noqa: F401
+    # Phase 1：全市场标的表（新增，不触碰已有 28 张表）
+    from app.models import market_models  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
     _ensure_columns()
