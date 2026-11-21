@@ -1,0 +1,85 @@
+# =====================================================================
+# ETF 候选池（C 层）准入规则
+# 原则：数量是规则的产物，不是目标。门槛收紧后自然收敛到 100–150 只。
+# 说明：amount_basis=1d 表示用当日成交额近似 20 日均额（首期）；
+#       接入日线后改为 20d，阈值需要重新校准。
+# =====================================================================
+version: 1
+amount_basis: "1d"
+
+# 全局排除
+# 注：REITs 不纳入本系统。它是权益型不动产（特许经营权 20-40 年、
+# 波动接近股票而非债券），且场内流动性极差（97 只里仅 2 只过门槛），
+# 与低频 ETF 配置的目标不符。识别出来是为了明确拒绝，而不是误归入行业 ETF。
+global_exclude:
+  name_keywords: ["退市", "终止上市", "REIT", "不动产投资信托"]
+  min_listed_days: 250
+  exclude_suspended: true
+
+# 分类型门槛（不同资产风险特征不同，不能一套阈值）
+classes:
+  broad:
+    label: 宽基
+    min_amount_20d: 50000000      # 5000 万
+    max_premium_abs: 0.03
+    keep_per_index: 2
+  sector:
+    label: 行业主题
+    min_amount_20d: 50000000      # 5000 万(与详情预算覆盖区间一致)
+    max_premium_abs: 0.03
+    keep_per_index: 2
+  cross_border:
+    label: 跨境
+    min_amount_20d: 50000000
+    max_premium_abs: 0.08         # 跨境实测有 +10% 溢价，阈值放宽但要标注
+    keep_per_index: 2
+  bond:
+    label: 债券
+    min_amount_20d: 20000000
+    max_premium_abs: 0.02
+    keep_per_index: 2
+  money:
+    label: 货币
+    min_amount_20d: 50000000
+    max_premium_abs: null          # 货币基金净值口径不同，不计算折溢价
+    keep_per_index: 1
+  commodity:
+    label: 商品
+    min_amount_20d: 50000000
+    max_premium_abs: 0.05
+    keep_per_index: 2
+  other:
+    label: 其他
+    min_amount_20d: 50000000
+    max_premium_abs: 0.03
+    keep_per_index: 1
+
+# 同指数去重：同一跟踪指数保留成交额最大的 1 只；
+# 第二名只有在成交额与规模都不低于第一名 50% 时才保留（作为备选）
+dedupe:
+  enabled: true
+  max_per_index: 2
+  second_place_min_ratio: 0.5
+
+# 补充扫描：东财 ETF 板块不含债券/货币 ETF，用代码段批量补齐。
+# 只扫描最可能包含场内基金且未被列表覆盖的段，避免几千次无效请求。
+# REIT 段（沪 508 / 深 180）已移除：该类资产不纳入系统。
+supplement:
+  enabled: true
+  batch_size: 50
+  segments:
+    - {market: "1", prefix: "511", start: 0, end: 999}   # 沪市债券/货币 ETF
+
+# 采集限制
+# 详情预算必须按类别配额分配：若按全局成交额排序，REIT/债券这类
+# 低流动性品种会被系统性挤掉，导致整类 0 候选。
+fetch:
+  max_detail_checks: 620
+  detail_interval_seconds: 0.4
+  detail_quota:
+    broad: 160
+    sector: 260
+    cross_border: 100
+    bond: 40
+    commodity: 30
+    money: 20

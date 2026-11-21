@@ -1,0 +1,58 @@
+# =====================================================================
+# 组合风险约束与示例配置
+# 真实约束以数据库 risk_constraints 为准，这里是初始化默认值。
+# =====================================================================
+version: 2
+
+# 单一品种与集中度
+portfolio:
+  max_single_instrument: 0.20      # 单一品种最大权重
+  max_single_industry: 0.35        # 单一行业/主题最大敞口
+  max_turnover_per_rebalance: 0.12 # 单次调仓最大换手
+  max_tactical_tilt: 0.05          # 单类资产单次战术调整上限
+  min_confidence: 0.35
+  rebalance_days: 20
+  min_holding_days: 10
+  transaction_cost_bps: 8          # 单边交易成本（含冲击成本）
+  min_trade_weight: 0.005          # 小于该幅度的调整不生成建议
+
+# 各一级类别默认上下限（可被用户覆盖）
+class_limits:
+  CASH:       {min: 0.05, max: 0.50}
+  CN_EQ:      {min: 0.00, max: 0.60}
+  FUND:       {min: 0.00, max: 0.60}
+  BOND:       {min: 0.00, max: 0.60}
+  GOLD:       {min: 0.00, max: 0.20}
+  COMMODITY:  {min: 0.00, max: 0.15}
+  DERIVATIVE: {min: 0.00, max: 0.00}
+  OVERSEAS:   {min: 0.00, max: 0.30}
+  REIT:       {min: 0.00, max: 0.00}   # 已排除：权益型不动产、期限长、流动性差
+  WEALTH:     {min: 0.00, max: 0.30}
+  INSURANCE:  {min: 0.00, max: 0.30}
+  REALESTATE: {min: 0.00, max: 0.60}
+
+# 默认示例组合（未完成投资者配置时展示，明确标记为示例，不是个性化建议）
+example_portfolio:
+  name: 示例组合（非个性化建议）
+  total_value: 1000000
+  cash_value: 80000
+  base_weights:
+    CASH: 0.10
+    CN_EQ: 0.22
+    FUND: 0.20
+    BOND: 0.25
+    GOLD: 0.08
+    COMMODITY: 0.03
+    OVERSEAS: 0.12
+
+# 不同风险偏好的战略基准（用户确认后作为 base_weights）
+profiles:
+  conservative:
+    name: 稳健
+    base_weights: {CASH: 0.20, CN_EQ: 0.10, FUND: 0.12, BOND: 0.42, GOLD: 0.08, COMMODITY: 0.02, OVERSEAS: 0.06}
+  balanced:
+    name: 平衡
+    base_weights: {CASH: 0.10, CN_EQ: 0.20, FUND: 0.20, BOND: 0.31, GOLD: 0.08, COMMODITY: 0.03, OVERSEAS: 0.08}
+  aggressive:
+    name: 进取
+    base_weights: {CASH: 0.05, CN_EQ: 0.30, FUND: 0.27, BOND: 0.18, GOLD: 0.08, COMMODITY: 0.05, OVERSEAS: 0.07}

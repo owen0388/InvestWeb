@@ -1,0 +1,200 @@
+# =====================================================================
+# 一级 / 二级资产类别目录
+# analysis_module 决定使用哪套专属分析模型（见 config/signal_rules.yaml）
+# 后续新增类别只需在此追加，重启后自动写入数据库，不需要改代码。
+# =====================================================================
+version: 2
+
+classes:
+  - code: CASH
+    name: 现金与现金管理
+    module: cash
+    description: 活期、定期、大额存单、货币基金等。核心是收益率、期限、赎回规则与流动性。
+    tradable: true
+    liquidity: high
+    min: 0.00
+    max: 0.60
+    children:
+      - code: CASH_DEMAND
+        name: 活期与货币基金
+        module: cash
+      - code: CASH_TERM
+        name: 定期存款与大额存单
+        module: cash
+
+  - code: CN_EQ
+    name: 中国股票
+    module: equity_cn
+    description: 沪深北交易所股票、主要指数与行业指数。
+    tradable: true
+    liquidity: high
+    min: 0.00
+    max: 0.80
+    children:
+      - code: CN_EQ_INDEX
+        name: 宽基指数
+        module: equity_cn
+      - code: CN_EQ_INDUSTRY
+        name: 行业与主题指数
+        module: equity_cn
+      - code: CN_EQ_STOCK
+        name: 个股
+        module: equity_cn
+
+  - code: FUND
+    name: 股票与交易所基金
+    module: fund
+    description: 宽基/行业/主题/红利 ETF、主动权益、FOF、LOF、跨境 ETF。
+    tradable: true
+    liquidity: high
+    min: 0.00
+    max: 0.80
+    children:
+      - code: FUND_ETF_WIDE
+        name: 宽基 ETF
+        module: fund
+      - code: FUND_ETF_SECTOR
+        name: 行业主题 ETF
+        module: fund
+      - code: FUND_CROSS
+        name: 跨境 ETF 与 QDII
+        module: fund
+
+  - code: BOND
+    name: 债券与固定收益
+    module: bond
+    description: 国债、地方债、政金债、信用债、可转债、债基与债券 ETF。
+    tradable: true
+    liquidity: medium
+    min: 0.00
+    max: 0.80
+    children:
+      - code: BOND_RATE
+        name: 利率债
+        module: bond
+      - code: BOND_CREDIT
+        name: 信用债与可转债
+        module: bond
+
+  - code: GOLD
+    name: 贵金属
+    module: gold
+    description: 黄金、白银及其合规投资工具。
+    tradable: true
+    liquidity: medium
+    min: 0.00
+    max: 0.30
+    children:
+      - code: GOLD_XAU
+        name: 黄金
+        module: gold
+      - code: GOLD_XAG
+        name: 白银
+        module: gold
+
+  - code: COMMODITY
+    name: 能源与大宗商品
+    module: commodity
+    description: 原油、天然气、铜、铝、煤炭、农产品等。
+    tradable: true
+    liquidity: medium
+    min: 0.00
+    max: 0.20
+    children:
+      - code: COMM_ENERGY
+        name: 能源
+        module: commodity
+      - code: COMM_METAL
+        name: 工业金属
+        module: commodity
+
+  - code: DERIVATIVE
+    name: 期货期权与衍生品
+    module: derivative
+    description: 仅用于研究、风险监控与模拟策略，默认不参与真实下单，不套用普通基金仓位规则。
+    tradable: false
+    liquidity: medium
+    min: 0.00
+    max: 0.00
+    children:
+      - code: DERIV_FUTURE
+        name: 商品与金融期货
+        module: derivative
+      - code: DERIV_OPTION
+        name: 期权
+        module: derivative
+
+  - code: OVERSEAS
+    name: 港股与跨境资产
+    module: overseas
+    description: 港股通、QDII、跨境 ETF，需关注汇率、交易日、折溢价与准入。
+    tradable: true
+    liquidity: medium
+    min: 0.00
+    max: 0.40
+    children:
+      - code: OVERSEAS_HK
+        name: 港股
+        module: overseas
+      - code: OVERSEAS_US
+        name: 美股与全球指数
+        module: overseas
+
+  - code: REIT
+    name: 公募 REITs（不纳入）
+    module: reit
+    description: 已按决策排除。REITs 为权益型不动产（特许经营权 20-40 年、波动接近股票），
+      场内流动性差，不适合本系统的低频 ETF 配置目标；保留类目仅为目录完整性，不参与配置与评分。
+    tradable: false
+    liquidity: low
+    min: 0.00
+    max: 0.00
+    children:
+      - code: REIT_INFRA
+        name: 基础设施 REITs
+        module: reit
+
+  - code: WEALTH
+    name: 银行理财与其他资管
+    module: wealth
+    description: 缺乏公开稳定数据接口，默认人工维护，不虚构净值与收益。
+    tradable: false
+    liquidity: low
+    min: 0.00
+    max: 0.30
+    children:
+      - code: WEALTH_BANK
+        name: 银行理财
+        module: wealth
+      - code: WEALTH_PRIVATE
+        name: 私募及其他资管
+        module: wealth
+
+  - code: INSURANCE
+    name: 保险与长期资产
+    module: long_term
+    description: 储蓄型保险、年金、养老金。使用长期现金流模型，不套用日频技术指标。
+    tradable: false
+    liquidity: very_low
+    min: 0.00
+    max: 0.40
+    children:
+      - code: INS_SAVING
+        name: 储蓄型保险与年金
+        module: long_term
+
+  - code: REALESTATE
+    name: 房地产与其他非标
+    module: long_term
+    description: 自住/投资性房产、租金、负债。缺乏可靠估值时明确标记为估值不确定。
+    tradable: false
+    liquidity: very_low
+    min: 0.00
+    max: 0.70
+    children:
+      - code: RE_HOME
+        name: 自住房产
+        module: long_term
+      - code: RE_INVEST
+        name: 投资性房产
+        module: long_term

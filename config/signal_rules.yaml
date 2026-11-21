@@ -1,0 +1,221 @@
+# =====================================================================
+# 信号与事件规则（全部可配置，改动后重启生效并记录版本）
+# 说明：规则引擎只做“可解释的初筛与打分”，不假装是 AI 结论。
+# 高能力模型仅在满足升级条件时调用（见 ai.escalation）。
+# =====================================================================
+version: 3
+
+# ---------------------------------------------------------------------
+# 一、事件分类与关键词
+# base_importance: 该类别事件的基础重要性
+# bias: 对风险资产的名义方向（仅作为先验，最终方向由事件内容与证据决定）
+# asset_classes: 该类事件默认关联的资产类别（用于传导路径初筛）
+# ---------------------------------------------------------------------
+event_categories:
+  - code: monetary_policy
+    name: 货币政策
+    keywords: [降息, 加息, 降准, 升准, LPR, 逆回购, MLF, 公开市场操作, 议息, 货币政策, 美联储, FOMC, 央行, 流动性投放]
+    base_importance: 78
+    bias: mixed
+    asset_classes: [BOND, GOLD, CN_EQ, OVERSEAS]
+    mechanism: 政策利率与流动性变化 → 折现率与风险溢价 → 债券、成长股与黄金的相对估值
+  - code: fiscal_policy
+    name: 财政政策
+    keywords: [财政, 专项债, 赤字率, 减税, 增发国债, 特别国债, 财政支出, 补贴, 刺激计划]
+    base_importance: 72
+    bias: bullish
+    asset_classes: [CN_EQ, COMMODITY, BOND]
+    mechanism: 财政扩张 → 总需求与基建/制造业订单 → 周期品与权益盈利预期
+  - code: economic_data
+    name: 经济数据
+    keywords: [CPI, PPI, GDP, PMI, 社融, 新增贷款, 工业增加值, 社会消费品零售, 失业率, 非农, 通胀, 出口, 进口]
+    base_importance: 62
+    bias: mixed
+    asset_classes: [CN_EQ, BOND, COMMODITY]
+    mechanism: 增长与通胀读数相对预期 → 政策预期与盈利预期 → 股债商相对强弱
+  - code: liquidity
+    name: 金融市场流动性
+    keywords: [流动性, 资金面, 隔夜利率, 同业存单, 逆回购到期, 缩表, 扩表, 融资余额, 北向资金, 成交量]
+    base_importance: 58
+    bias: mixed
+    asset_classes: [CN_EQ, BOND]
+    mechanism: 资金价格与成交量 → 风险偏好与估值弹性
+  - code: credit_risk
+    name: 信用与债务风险
+    keywords: [违约, 展期, 债务重组, 信用评级下调, 城投, 房地产债务, 爆雷, 破产, 清算]
+    base_importance: 80
+    bias: bearish
+    asset_classes: [BOND, CN_EQ, REIT]
+    mechanism: 信用利差走阔 → 融资成本上升 → 高杠杆行业与信用债承压
+  - code: geopolitics
+    name: 地缘政治
+    keywords: [地缘, 冲突, 制裁, 关税, 出口管制, 谈判, 停火, 大选, 军事演习, 领海, 条约]
+    base_importance: 76
+    bias: bearish
+    asset_classes: [GOLD, COMMODITY, OVERSEAS, CN_EQ]
+    mechanism: 地缘风险溢价上升 → 避险资产（黄金、国债）受益，风险资产波动放大
+  - code: military
+    name: 军事冲突
+    keywords: [军事, 导弹, 空袭, 战争, 交火, 部队, 国防, 军工, 航母, 无人机]
+    base_importance: 85
+    bias: bearish
+    asset_classes: [GOLD, COMMODITY, OVERSEAS]
+    mechanism: 冲突升级 → 能源与航运风险溢价 → 通胀预期与避险需求同时上升
+  - code: energy_supply
+    name: 能源与供应链
+    keywords: [原油, 天然气, 减产, 增产, OPEC, 库存, 运价, 港口, 罢工, 供应链, 断供, 产能]
+    base_importance: 70
+    bias: mixed
+    asset_classes: [COMMODITY, CN_EQ, GOLD]
+    mechanism: 供给冲击 → 商品价格与通胀 → 中下游利润率与政策空间
+  - code: trade_tariff
+    name: 贸易制裁与关税
+    keywords: [关税, 贸易, 反倾销, 出口限制, 实体清单, 制裁, 贸易协定, 反制]
+    base_importance: 74
+    bias: bearish
+    asset_classes: [CN_EQ, OVERSEAS, COMMODITY]
+    mechanism: 贸易壁垒 → 出口链与外需预期 → 相关行业盈利与汇率
+  - code: technology
+    name: 科技产业
+    keywords: [半导体, 芯片, 人工智能, AI, 算力, 大模型, 数据中心, 光模块, 机器人, 国产替代]
+    base_importance: 66
+    bias: bullish
+    asset_classes: [CN_EQ, FUND, OVERSEAS]
+    mechanism: 技术迭代与资本开支 → 产业链订单 → 成长板块估值
+  - code: company
+    name: 上市公司公告与财报
+    keywords: [业绩预告, 财报, 净利润, 回购, 增持, 减持, 分红, 定增, 并购, 重组, 中标, 订单, 停牌, 复牌]
+    base_importance: 55
+    bias: mixed
+    asset_classes: [CN_EQ, FUND]
+    mechanism: 公司层面盈利与资本运作 → 个股与行业指数相对表现
+  - code: regulation
+    name: 监管与法律政策
+    keywords: [监管, 处罚, 立案, 反垄断, 新规, 征求意见, 牌照, 备案, 政策文件, 国务院]
+    base_importance: 64
+    bias: mixed
+    asset_classes: [CN_EQ, WEALTH, REIT]
+    mechanism: 监管变化 → 行业准入与商业模式 → 风险溢价重估
+  - code: disaster
+    name: 自然灾害与公共事件
+    keywords: [地震, 洪水, 台风, 干旱, 疫情, 火灾, 事故, 停电, 公共卫生]
+    base_importance: 68
+    bias: bearish
+    asset_classes: [COMMODITY, CN_EQ, INSURANCE]
+    mechanism: 供给中断与人员/资本损失 → 局部商品价格与保险赔付
+  - code: other
+    name: 其他市场重要事件
+    keywords: []
+    base_importance: 40
+    bias: mixed
+    asset_classes: []
+    mechanism: 需结合具体内容判断
+
+# ---------------------------------------------------------------------
+# 二、事件重要性 / 置信度参数
+# ---------------------------------------------------------------------
+event_scoring:
+  priority_keywords:
+    {紧急: 8, 重大: 6, 历史性: 8, 首次: 4, 全面: 4, 超预期: 6, 意外: 5, 大幅: 3, 暴跌: 5, 暴涨: 5, 暂停: 4, 禁止: 5}
+  source_bonus_per_extra_source: 3
+  max_source_bonus: 12
+  min_importance_to_notify: 72
+  min_importance_to_analyze: 45
+  cluster_similarity_threshold: 0.62
+  cluster_window_hours: 48
+  # 事件结论在多少小时内可复用（避免重复调用模型）
+  analysis_ttl_hours: 12
+
+# ---------------------------------------------------------------------
+# 三、资产专属评分模型
+# 每类资产权重不同；缺失特征会被剔除并按剩余权重归一化，
+# 同时降低 data_quality 与置信度。total_score 只用于同类内相对比较，
+# 不能跨资产类别当成同一单位的预期收益。
+# ---------------------------------------------------------------------
+scoring:
+  windows:
+    short: 20
+    mid: 60
+    long: 120
+  action_thresholds:
+    strong_buy_research: 72      # 考虑提高权重
+    buy_research: 62             # 积极研究
+    hold: 45                     # 维持配置
+    watch: 35                    # 观察等待
+    reduce: 25                   # 考虑降低权重
+  min_confidence_for_action: 0.35
+  min_data_quality_for_action: 0.40
+  max_score_change_for_tilt: 8   # 单次评分变化超过该值时，需要更多证据才加仓
+
+  modules:
+    equity_cn:
+      weights: {trend: 0.30, valuation: 0.15, fundamental: 0.10, macro: 0.15, catalyst: 0.20, liquidity: 0.10}
+      params: {vol_penalty: 0.55}
+    fund:
+      weights: {trend: 0.35, valuation: 0.10, fundamental: 0.05, macro: 0.15, catalyst: 0.20, liquidity: 0.15}
+      params: {vol_penalty: 0.50}
+    bond:
+      weights: {trend: 0.30, valuation: 0.20, macro: 0.25, catalyst: 0.15, liquidity: 0.10}
+      params: {vol_penalty: 0.35}
+    gold:
+      weights: {trend: 0.35, macro: 0.30, catalyst: 0.20, liquidity: 0.15}
+      params: {vol_penalty: 0.40}
+    commodity:
+      weights: {trend: 0.35, macro: 0.20, catalyst: 0.25, liquidity: 0.20}
+      params: {vol_penalty: 0.50}
+    overseas:
+      weights: {trend: 0.35, macro: 0.20, catalyst: 0.20, liquidity: 0.10, valuation: 0.15}
+      params: {vol_penalty: 0.50}
+    reit:
+      weights: {trend: 0.25, valuation: 0.20, macro: 0.20, catalyst: 0.20, liquidity: 0.15}
+      params: {vol_penalty: 0.45}
+    cash:
+      weights: {valuation: 0.35, liquidity: 0.35, macro: 0.30}
+      params: {vol_penalty: 0.10}
+    wealth:
+      weights: {valuation: 0.40, liquidity: 0.30, macro: 0.30}
+      params: {vol_penalty: 0.20}
+    long_term:
+      weights: {valuation: 0.40, macro: 0.30, liquidity: 0.30}
+      params: {vol_penalty: 0.10}
+    derivative:
+      weights: {trend: 0.30, macro: 0.20, catalyst: 0.20, liquidity: 0.30}
+      params: {vol_penalty: 0.80}
+    generic:
+      weights: {trend: 0.35, macro: 0.25, catalyst: 0.20, liquidity: 0.20}
+      params: {vol_penalty: 0.50}
+
+# ---------------------------------------------------------------------
+# 四、市场风险状态（风险偏好）
+# ---------------------------------------------------------------------
+regime:
+  components:
+    equity_trend: {weight: 0.30, label: 权益趋势}
+    equity_momentum: {weight: 0.20, label: 权益动量}
+    volatility: {weight: 0.20, label: 波动率}
+    breadth: {weight: 0.15, label: 市场广度}
+    haven: {weight: 0.10, label: 避险资产}
+    event_risk: {weight: 0.05, label: 事件风险}
+  thresholds:
+    risk_on: 62
+    risk_off: 38
+    extreme_event_importance: 88
+    extreme_volatility_pct: 35
+    max_event_risk: 25
+  min_coverage: 0.45
+
+# ---------------------------------------------------------------------
+# 五、AI 升级条件（Token 成本控制）
+# ---------------------------------------------------------------------
+ai:
+  escalation:
+    min_importance: 78
+    min_source_count: 3
+    min_affected_classes: 3
+    signal_change_threshold: 12
+  budget:
+    max_calls_per_run: 3
+    cheap_model_max_input_chars: 6000
+    strong_model_max_input_chars: 14000
+  prompt_version: event-analysis-v1
+  cache_ttl_hours: 24

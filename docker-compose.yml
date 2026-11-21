@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    container_name: invest-intelligence
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////app/data/invest.db
+      SCHEDULER_ENABLED: "1"
+      TIMEZONE: Asia/Shanghai
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

@@ -1,0 +1,193 @@
+# =====================================================================
+# 投资品种目录（首期真实可采集 + 人工维护两类）
+# data_status:
+#   unverified = 已登记但尚未成功采集
+#   manual     = 人工维护，无公开行情，不参与自动信号
+#   restricted = 需适当性/准入，默认不参与配置
+# 说明：这里只登记“可识别的具体品种”，不代表已获得实时数据。
+# =====================================================================
+version: 2
+
+instruments:
+  # ---------- 中国股票：宽基指数 ----------
+  - {symbol: sh000001, name: 上证指数, class: CN_EQ_INDEX, type: index, market: CN, provider: sina, risk: medium, liquidity: high, tags: [大盘, 上证]}
+  - {symbol: sh000300, name: 沪深300, class: CN_EQ_INDEX, type: index, market: CN, provider: sina, risk: medium, liquidity: high, tags: [大盘, 核心宽基]}
+  - {symbol: sh000905, name: 中证500, class: CN_EQ_INDEX, type: index, market: CN, provider: sina, risk: medium, liquidity: high, tags: [中盘]}
+  - {symbol: sh000852, name: 中证1000, class: CN_EQ_INDEX, type: index, market: CN, provider: sina, risk: high, liquidity: high, tags: [小盘]}
+  - {symbol: sz399001, name: 深证成指, class: CN_EQ_INDEX, type: index, market: CN, provider: sina, risk: medium, liquidity: high, tags: [深市]}
+  - {symbol: sz399006, name: 创业板指, class: CN_EQ_INDEX, type: index, market: CN, provider: sina, risk: high, liquidity: high, tags: [成长]}
+  - {symbol: sh000688, name: 科创50, class: CN_EQ_INDEX, type: index, market: CN, provider: sina, risk: high, liquidity: high, tags: [科技, 科创板]}
+
+  # ---------- 中国股票：个股 ----------
+  - {symbol: sh600519, name: 贵州茅台, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: medium, liquidity: high, tags: [消费, 白酒]}
+  - {symbol: sz000858, name: 五粮液, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: medium, liquidity: high, tags: [消费, 白酒]}
+  - {symbol: sh601318, name: 中国平安, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: medium, liquidity: high, tags: [金融, 保险]}
+  - {symbol: sh600036, name: 招商银行, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: medium, liquidity: high, tags: [金融, 银行]}
+  - {symbol: sz300750, name: 宁德时代, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: high, liquidity: high, tags: [新能源, 电池]}
+  - {symbol: sh688981, name: 中芯国际, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: high, liquidity: high, tags: [半导体]}
+  - {symbol: sz002594, name: 比亚迪, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: high, liquidity: high, tags: [新能源车]}
+  - {symbol: sh601899, name: 紫金矿业, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: high, liquidity: high, tags: [有色, 黄金]}
+  - {symbol: sh600900, name: 长江电力, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: low, liquidity: high, tags: [公用事业, 红利]}
+  - {symbol: sz000001, name: 平安银行, class: CN_EQ_STOCK, type: stock, market: CN, provider: sina, risk: medium, liquidity: high, tags: [金融, 银行]}
+
+  # ---------- 基金：宽基 ETF ----------
+  - {symbol: sh510300, name: 沪深300ETF, class: FUND_ETF_WIDE, type: etf, market: CN, provider: sina, risk: medium, liquidity: high, tags: [宽基]}
+  - {symbol: sh510500, name: 中证500ETF, class: FUND_ETF_WIDE, type: etf, market: CN, provider: sina, risk: medium, liquidity: high, tags: [宽基, 中盘]}
+  - {symbol: sh512100, name: 中证1000ETF, class: FUND_ETF_WIDE, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [宽基, 小盘]}
+  - {symbol: sh510050, name: 上证50ETF, class: FUND_ETF_WIDE, type: etf, market: CN, provider: sina, risk: low, liquidity: high, tags: [宽基, 大盘]}
+  - {symbol: sh588000, name: 科创50ETF, class: FUND_ETF_WIDE, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [科技]}
+  - {symbol: sz159915, name: 创业板ETF, class: FUND_ETF_WIDE, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [成长]}
+  - {symbol: sh510880, name: 红利ETF, class: FUND_ETF_WIDE, type: etf, market: CN, provider: sina, risk: low, liquidity: medium, tags: [红利, 价值]}
+
+  # ---------- 基金：行业主题 ETF ----------
+  - {symbol: sh512880, name: 证券ETF, class: FUND_ETF_SECTOR, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [金融, 券商]}
+  - {symbol: sh515030, name: 新能源车ETF, class: FUND_ETF_SECTOR, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [新能源车]}
+  - {symbol: sh512480, name: 半导体ETF, class: FUND_ETF_SECTOR, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [半导体, 科技]}
+  - {symbol: sh512170, name: 医疗ETF, class: FUND_ETF_SECTOR, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [医药]}
+  - {symbol: sh515790, name: 光伏ETF, class: FUND_ETF_SECTOR, type: etf, market: CN, provider: sina, risk: high, liquidity: medium, tags: [新能源, 光伏]}
+  - {symbol: sh512690, name: 酒ETF, class: FUND_ETF_SECTOR, type: etf, market: CN, provider: sina, risk: medium, liquidity: medium, tags: [消费]}
+
+  # ---------- 基金：跨境 ----------
+  - {symbol: sh513100, name: 纳指ETF, class: FUND_CROSS, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [跨境, 美股]}
+  - {symbol: sh513500, name: 标普500ETF, class: FUND_CROSS, type: etf, market: CN, provider: sina, risk: medium, liquidity: high, tags: [跨境, 美股]}
+  - {symbol: sh513050, name: 中概互联网ETF, class: FUND_CROSS, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [跨境, 互联网]}
+  - {symbol: sh513180, name: 恒生科技ETF, class: FUND_CROSS, type: etf, market: CN, provider: sina, risk: high, liquidity: high, tags: [跨境, 港股科技]}
+
+  # ---------- 债券 ----------
+  - {symbol: sh511010, name: 国债ETF, class: BOND_RATE, type: etf, market: CN, provider: sina, risk: low, liquidity: high, tags: [利率债]}
+  - {symbol: sh511260, name: 十年国债ETF, class: BOND_RATE, type: etf, market: CN, provider: sina, risk: low, liquidity: high, tags: [利率债, 长久期]}
+  - {symbol: sh000012, name: 上证国债指数, class: BOND_RATE, type: index, market: CN, provider: sina, risk: low, liquidity: high, tags: [利率债]}
+  - {symbol: sh511380, name: 可转债ETF, class: BOND_CREDIT, type: etf, market: CN, provider: sina, risk: medium, liquidity: high, tags: [可转债]}
+
+  # ---------- 现金 ----------
+  - {symbol: sh511880, name: 银华日利（货币ETF）, class: CASH_DEMAND, type: money_fund, market: CN, provider: sina, risk: very_low, liquidity: high, tags: [货币基金]}
+  - symbol: CASH_DEPOSIT
+    name: 活期存款
+    class: CASH_DEMAND
+    type: deposit
+    market: CN
+    provider: manual
+    risk: very_low
+    liquidity: high
+    status: manual
+    notes: 利率由用户手工录入，系统不抓取个人账户数据。
+  - symbol: CASH_CD_3Y
+    name: 三年期大额存单
+    class: CASH_TERM
+    type: cd
+    market: CN
+    provider: manual
+    risk: very_low
+    liquidity: medium
+    status: manual
+    notes: 期限与利率需人工维护，标记为人工维护数据。
+
+  # ---------- 贵金属 ----------
+  - {symbol: sh518880, name: 黄金ETF, class: GOLD_XAU, type: etf, market: CN, provider: sina, risk: medium, liquidity: high, tags: [黄金]}
+  - {symbol: hf_GC, name: COMEX 黄金, class: GOLD_XAU, type: future, market: GLOBAL, provider: sina, currency: USD, risk: high, liquidity: high, tags: [黄金, 外盘]}
+  - {symbol: hf_SI, name: COMEX 白银, class: GOLD_XAG, type: future, market: GLOBAL, provider: sina, currency: USD, risk: high, liquidity: medium, tags: [白银, 外盘]}
+
+  # ---------- 能源与大宗 ----------
+  - {symbol: hf_CL, name: WTI 原油, class: COMM_ENERGY, type: future, market: GLOBAL, provider: sina, currency: USD, risk: high, liquidity: high, tags: [原油, 能源]}
+  - {symbol: hf_NG, name: NYMEX 天然气, class: COMM_ENERGY, type: future, market: GLOBAL, provider: sina, currency: USD, risk: high, liquidity: medium, tags: [天然气, 能源]}
+  - {symbol: hf_CAD, name: LME 铜, class: COMM_METAL, type: future, market: GLOBAL, provider: sina, currency: USD, risk: high, liquidity: high, tags: [铜, 工业金属]}
+  - {symbol: hf_AHD, name: LME 铝, class: COMM_METAL, type: future, market: GLOBAL, provider: sina, currency: USD, risk: high, liquidity: medium, tags: [铝, 工业金属]}
+
+  # ---------- 衍生品（仅研究，不参与配置） ----------
+  - symbol: IF_MAIN
+    name: 沪深300股指期货（主力）
+    class: DERIV_FUTURE
+    type: future
+    market: CN
+    provider: manual
+    risk: very_high
+    liquidity: high
+    status: restricted
+    qualification: 金融期货适当性
+    notes: 首期仅登记风险模型与合约参数，不接入实时行情，不参与目标权重。
+  - symbol: OPT_300
+    name: 沪深300期权
+    class: DERIV_OPTION
+    type: option
+    market: CN
+    provider: manual
+    risk: very_high
+    liquidity: medium
+    status: restricted
+    qualification: 期权适当性
+    notes: 需通过适当性评估；首期不接入行情，仅作为风险提示目录项。
+
+  # ---------- 港股与跨境 ----------
+  - {symbol: hkHSI, name: 恒生指数, class: OVERSEAS_HK, type: index, market: HK, provider: sina, currency: HKD, risk: medium, liquidity: high, tags: [港股]}
+  - {symbol: hk00700, name: 腾讯控股, class: OVERSEAS_HK, type: stock, market: HK, provider: sina, currency: HKD, risk: medium, liquidity: high, tags: [港股, 互联网]}
+  - {symbol: gb_$dji, name: 道琼斯工业指数, class: OVERSEAS_US, type: index, market: US, provider: sina, currency: USD, risk: medium, liquidity: high, tags: [美股]}
+  - {symbol: gb_$ixic, name: 纳斯达克综合指数, class: OVERSEAS_US, type: index, market: US, provider: sina, currency: USD, risk: high, liquidity: high, tags: [美股, 科技]}
+  - {symbol: gb_$inx, name: 标普500指数, class: OVERSEAS_US, type: index, market: US, provider: sina, currency: USD, risk: medium, liquidity: high, tags: [美股]}
+
+  # ---------- REITs（已移除） ----------
+  # 不纳入系统：REITs 是权益型不动产（特许经营权 20-40 年、波动接近股票），
+  # 且场内流动性差，与低频 ETF 配置目标不符。原 sh508000 / sh508056 / sz180101 已删除。
+
+  # ---------- 银行理财与其他资管（人工维护） ----------
+  - symbol: WM_CASH_01
+    name: 银行现金管理类理财
+    class: WEALTH_BANK
+    type: bank_wealth
+    market: CN
+    provider: manual
+    risk: low
+    liquidity: medium
+    status: manual
+    notes: 净值与收益率需人工录入；未录入时标记“数据覆盖不足”。
+  - symbol: WM_FIXED_01
+    name: 银行固收类理财
+    class: WEALTH_BANK
+    type: bank_wealth
+    market: CN
+    provider: manual
+    risk: low
+    liquidity: low
+    status: manual
+    notes: 封闭期与赎回规则以合同为准，系统不假设可随时赎回。
+  - symbol: WM_PRIVATE_01
+    name: 信托/私募类产品（待核验）
+    class: WEALTH_PRIVATE
+    type: private_fund
+    market: CN
+    provider: manual
+    risk: high
+    liquidity: very_low
+    status: unverified
+    qualification: 合格投资者
+
+  # ---------- 保险与长期资产（人工维护） ----------
+  - symbol: INS_ANNUITY_01
+    name: 储蓄型年金保险
+    class: INS_SAVING
+    type: insurance
+    market: CN
+    provider: manual
+    risk: low
+    liquidity: very_low
+    status: manual
+    notes: 使用长期现金流模型，退保成本与保证/非保证利益由合同决定。
+  - symbol: RE_HOME_01
+    name: 自住房产
+    class: RE_HOME
+    type: real_estate
+    market: CN
+    provider: manual
+    risk: medium
+    liquidity: very_low
+    status: manual
+    notes: 无可靠市场估值，标记为估值不确定。
+  - symbol: RE_INVEST_01
+    name: 投资性房产
+    class: RE_INVEST
+    type: real_estate
+    market: CN
+    provider: manual
+    risk: high
+    liquidity: very_low
+    status: manual
+    notes: 租金、空置率、贷款与维护成本需人工维护。

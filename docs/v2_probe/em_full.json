@@ -1,0 +1,50 @@
+{
+ "indexes": {},
+ "failures": [
+  [
+   "半导体",
+   "H30184",
+   "RemoteProtocolError"
+  ],
+  [
+   "通信设备",
+   "931160",
+   "RemoteProtocolError"
+  ],
+  [
+   "化工",
+   "000813",
+   "RemoteProtocolError"
+  ],
+  [
+   "锂电",
+   "980032",
+   "RemoteProtocolError"
+  ],
+  [
+   "电力设备",
+   "931994",
+   "RemoteProtocolError"
+  ],
+  [
+   "有色金属",
+   "000811",
+   "RemoteProtocolError"
+  ],
+  [
+   "创新药",
+   "931152",
+   "RemoteProtocolError"
+  ],
+  [
+   "工业自动化",
+   "980022",
+   "RemoteProtocolError"
+  ],
+  [
+   "沪深300",
+   "000300",
+   "RemoteProtocolError"
+  ]
+ ]
+}

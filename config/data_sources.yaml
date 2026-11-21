@@ -1,0 +1,148 @@
+# =====================================================================
+# 数据源登记表
+# status 初始值仅表示“配置状态”，运行时由采集结果自动更新为 healthy/degraded/error
+# 未配置密钥的适配器保留在目录中，明确展示原因，不伪造数据。
+# =====================================================================
+sources:
+  - code: sina_quote
+    name: 新浪财经行情
+    category: market
+    provider: sina
+    endpoint: https://hq.sinajs.cn/list=
+    auth_type: none
+    requires_key: false
+    rate_limit: 建议 <= 1 次/秒，单次可批量 50 个代码
+    terms_url: https://finance.sina.com.cn/
+    coverage: A 股指数/个股/ETF、港股、美股指数、COMEX 贵金属与原油、在岸人民币
+    interval_minutes: 5
+    note: 公开接口，个人研究用途；返回数据为交易所行情快照，收盘后标记为 close。
+
+  - code: eastmoney_kline
+    name: 东方财富日线历史
+    category: market
+    provider: eastmoney
+    endpoint: https://push2his.eastmoney.com/api/qt/stock/kline/get
+    auth_type: none
+    requires_key: false
+    rate_limit: 建议 <= 2 次/秒
+    terms_url: https://quote.eastmoney.com/
+    coverage: 沪深指数、ETF、个股日线（前复权）
+    interval_minutes: 1440
+    note: 用于趋势、波动、回撤与回测的历史价格序列。
+
+  - code: tencent_kline
+    name: 腾讯日线（备用）
+    category: market
+    provider: tencent
+    endpoint: https://web.ifzq.gtimg.cn/appstock/app/fqkline/get
+    auth_type: none
+    requires_key: false
+    rate_limit: 建议 <= 2 次/秒
+    terms_url: https://gu.qq.com/
+    coverage: 沪深指数、ETF、个股前复权日线
+    interval_minutes: 1440
+    note: 东方财富日线不可用时自动回退，仅在结果中记录实际来源。
+
+  - code: sina_kline
+    name: 新浪日线（备用）
+    category: market
+    provider: sina
+    endpoint: https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData
+    auth_type: none
+    requires_key: false
+    rate_limit: 建议 <= 1 次/秒
+    terms_url: https://finance.sina.com.cn/
+    coverage: 沪深指数、ETF、个股日线（不复权）
+    interval_minutes: 1440
+    note: 第二备用来源；不复权，仅在腾讯与东方财富均失败时使用。
+
+  - code: eastmoney_news
+    name: 东方财富财经新闻
+    category: news
+    provider: eastmoney
+    endpoint: https://np-listapi.eastmoney.com/comm/web/getNewsByColumns
+    auth_type: none
+    requires_key: false
+    rate_limit: 建议 <= 1 次/分钟
+    terms_url: https://www.eastmoney.com/
+    coverage: 财经要闻、股市、产经等公开栏目
+    interval_minutes: 30
+    note: 仅保留标题、摘要、时间与原文链接，正文视为不可信外部数据。
+
+  - code: worldbank_macro
+    name: 世界银行公开数据
+    category: macro
+    provider: worldbank
+    endpoint: https://api.worldbank.org/v2
+    auth_type: none
+    requires_key: false
+    rate_limit: 无明确限制，建议 <= 1 次/秒
+    terms_url: https://www.worldbank.org/en/about/legal/terms-of-use
+    coverage: GDP、CPI、人口、贸易等年度指标（低频）
+    interval_minutes: 1440
+    note: 年度数据，release_at 与 period 严格分离，不做实时性宣称。
+
+  - code: fred_macro
+    name: FRED / ALFRED 宏观数据
+    category: macro
+    provider: fred
+    endpoint: https://api.stlouisfed.org/fred/series/observations
+    auth_type: api_key
+    requires_key: true
+    rate_limit: 官方建议 <= 120 次/分钟
+    terms_url: https://fred.stlouisfed.org/docs/api/terms_of_use.html
+    coverage: 美国利率、通胀、就业、货币供应等（需 API Key）
+    interval_minutes: 1440
+    note: 需要用户自行申请免费 Key 并写入 FRED_API_KEY。
+
+  - code: gdelt_news
+    name: GDELT 全球事件监测
+    category: news
+    provider: gdelt
+    endpoint: https://api.gdeltproject.org/api/v2/doc/doc
+    auth_type: none
+    requires_key: false
+    rate_limit: 官方要求 <= 1 次/5 秒
+    terms_url: https://www.gdeltproject.org/about.html
+    coverage: 全球多语种新闻发现（英文为主）
+    interval_minutes: 60
+    note: 默认关闭（GDELT_ENABLED=0），启用后受频率限制影响，可能出现 429。
+
+  - code: tushare_pro
+    name: Tushare Pro
+    category: market
+    provider: tushare
+    endpoint: https://api.tushare.pro
+    auth_type: token
+    requires_key: true
+    rate_limit: 取决于账号积分
+    terms_url: https://tushare.pro/document/2
+    coverage: A 股行情、财务、估值、指数成分等（需 Token 与积分）
+    interval_minutes: 1440
+    note: 未配置 TUSHARE_TOKEN 时状态为“缺少密钥”，不影响其他数据源。
+
+  - code: akshare
+    name: AKShare 公开数据适配器
+    category: market
+    provider: akshare
+    endpoint: python-package
+    auth_type: none
+    requires_key: false
+    rate_limit: 取决于上游站点
+    terms_url: https://akshare.akfamily.xyz/
+    coverage: 宏观、行情、基金等（需安装 akshare 包）
+    interval_minutes: 1440
+    note: 可选适配器，未安装依赖包时显示“缺少依赖”，不会导致系统启动失败。
+
+  - code: manual_entry
+    name: 人工录入 / CSV 导入
+    category: alternative
+    provider: manual
+    endpoint: local
+    auth_type: none
+    requires_key: false
+    rate_limit: 无
+    terms_url: ""
+    coverage: 存款、银行理财、保险、房产、非标资产及用户自定义持仓
+    interval_minutes: 0
+    note: 人工维护数据不参与自动信号，状态标记为 manual。
