@@ -250,8 +250,9 @@ def test_card_action_mapping(client, db):
     db.commit()
 
     card = client.get("/api/opportunity-radar/daily").json()["items"][0]
+    # P0 统一口径：动作词改为研究优先级（不再是交易性措辞）。
+    # 期望值随口径更新，测试本身保留。
     assert card["action"] in {
-        "积极研究", "观察等待", "维持配置", "考虑提高权重",
-        "考虑降低权重", "降低风险", "暂不判断",
+        "高优先级研究", "重点关注", "观察", "暂不关注", "数据不足",
     }
     _cleanup(db)

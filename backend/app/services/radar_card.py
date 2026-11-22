@@ -30,16 +30,15 @@ def _theme_label(theme: str) -> str:
 
 
 def _action(state: str, score: Optional[float], holding: bool = False) -> str:
-    if state == "CANDIDATE":
-        if holding:
-            return "考虑提高权重" if (score or 0) >= 65 else "维持配置"
-        if (score or 0) >= 65:
-            return "积极研究"
-        return "观察等待"
-    for prefix, label in ACTION_RULES:
-        if state == prefix:
-            return label
-    return "暂不判断"
+    """统一的研究优先级标签（P0 过渡期）。
+
+    原来这里按 state + 分数各自给词（积极研究/观察等待/考虑降低权重…），
+    与 /opportunities 的动作词重叠但阈值不同，同一标的会出现相反结论。
+    现在统一由 opportunity_registry.level_for 输出，`holding` 仅为向后兼容保留。
+    """
+    from app.services.opportunity_registry import level_for
+
+    return level_for(score, state)
 
 
 def _drivers(feats: dict, rs_score: Optional[float]) -> list[str]:

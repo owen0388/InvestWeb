@@ -93,27 +93,27 @@ def _load_closes(db: Session, symbols: list[str]) -> dict[str, list[float]]:
     return grouped
 
 
-def build_daily(db: Session, limit: int = DEFAULT_LIMIT) -> dict:
-    candidates = db.scalars(
-        select(EtfUniverse).where(EtfUniverse.status == "candidate")
-    ).all()
+def _evaluate_universe(db: Session, candidates: list | None = None) -> dict:
+    """给候选池全部标的算特征、状态、相对强弱与机会分。
+
+    **不做任何筛选与去重**——筛选是展示层的事。
+    这样 /radar 与 /opportunities 共用同一份计算，不会各算一套。
+
+    返回的 evaluated 每项含：code/symbol/name/category/state/features/
+    quality_score/rs_score/score。score 仅在 state == CANDIDATE 时有值。
+    """
+    if candidates is None:
+        candidates = db.scalars(
+            select(EtfUniverse).where(EtfUniverse.status == "candidate")
+        ).all()
     if not candidates:
-        return {
-            "as_of": now_cn().date().isoformat(),
-            "universe": 0,
-            "evaluated": 0,
-            "items": [],
-            "buckets": {},
-            "message": "候选池为空，请先刷新 ETF 候选池",
-            "blocking": ["候选池为空"],
-        }
+        return {"evaluated": [], "buckets": Counter(), "blocked_quality": 0, "candidates": []}
 
     closes = _load_closes(db, [row.symbol for row in candidates])
 
     evaluated: list[dict] = []
     buckets: Counter[str] = Counter()
     blocked_quality = 0
-    skipped_category = 0
     for row in candidates:
         if row.category in EXCLUDED_CATEGORIES:
             buckets["EXCLUDED_CATEGORY"] += 1
@@ -143,6 +143,8 @@ def build_daily(db: Session, limit: int = DEFAULT_LIMIT) -> dict:
                 "features": feats,
                 "quality_score": row.quality_score,
                 "quality_confidence": row.quality_confidence,
+                "rs_score": None,
+                "score": None,
             }
         )
 
@@ -158,17 +160,49 @@ def build_daily(db: Session, limit: int = DEFAULT_LIMIT) -> dict:
         ]
     )
 
+    for item in evaluated:
+        feats = item["features"]
+        rs_score = rs.get(item["code"])
+        item["rs_score"] = round(rs_score, 2) if rs_score is not None else None
+        if item["state"] == "CANDIDATE" and feats:
+            item["score"] = opportunity_score(feats, rs_score)
+            item["invalidation"] = _invalidation(feats)
+
+    return {
+        "evaluated": evaluated,
+        "buckets": buckets,
+        "blocked_quality": blocked_quality,
+        "candidates": candidates,
+    }
+
+
+def build_daily(db: Session, limit: int = DEFAULT_LIMIT) -> dict:
+    result = _evaluate_universe(db)
+    candidates = result["candidates"]
+    if not candidates:
+        return {
+            "as_of": now_cn().date().isoformat(),
+            "universe": 0,
+            "evaluated": 0,
+            "items": [],
+            "buckets": {},
+            "message": "候选池为空，请先刷新 ETF 候选池",
+            "blocking": ["候选池为空"],
+        }
+
+    evaluated = result["evaluated"]
+    buckets = result["buckets"]
+    blocked_quality = result["blocked_quality"]
+    skipped_category = 0
+
+    # 机会分已在 _evaluate_universe 中算好（与统一出口共用同一份计算），
+    # 这里只做筛选：非 CANDIDATE 不参与，分数不足不入榜。
     picks: list[dict] = []
     below_score = 0
     for item in evaluated:
         if item["state"] != "CANDIDATE":
             continue
-        feats = item["features"]
-        rs_score = rs.get(item["code"])
-        item["rs_score"] = round(rs_score, 2) if rs_score is not None else None
-        item["score"] = opportunity_score(feats, rs_score)
-        item["invalidation"] = _invalidation(feats)
-        if item["score"] < MIN_SCORE:
+        if item["score"] is None or item["score"] < MIN_SCORE:
             below_score += 1
             continue
         picks.append(item)

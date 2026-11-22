@@ -100,8 +100,14 @@ export function directionClass(value?: string | null): string {
 
 export function actionClass(action?: string | null): string {
   if (!action) return 'tag-muted'
-  if (action === '考虑提高权重') return 'tag-up'
-  if (action === '积极研究') return 'tag-primary'
+  // P0 统一口径：研究优先级标签
+  if (action === '高优先级研究') return 'tag-up'
+  if (action === '重点关注') return 'tag-primary'
+  if (action === '观察') return 'tag-neutral'
+  if (action === '暂不关注') return 'tag-muted'
+  if (action === '数据不足') return 'tag-muted'
+  // 兼容历史数据中的旧动作词
+  if (action === '考虑提高权重' || action === '积极研究') return 'tag-up'
   if (action === '维持配置' || action === '观察等待') return 'tag-neutral'
   if (action === '考虑降低权重') return 'tag-warn'
   if (action === '降低风险') return 'tag-down'

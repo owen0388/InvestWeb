@@ -30,10 +30,10 @@ async function load() {
 }
 
 function actionClass(action: string) {
-  if (action === '积极研究') return 'tag-down'
-  if (action === '观察等待') return 'tag-warn'
-  if (action.includes('降低') || action === '降低风险') return 'tag-danger'
-  return 'tag-neutral'
+  if (action === '高优先级研究') return 'tag-up'
+  if (action === '重点关注') return 'tag-primary'
+  if (action === '观察') return 'tag-neutral'
+  return 'tag-muted'
 }
 
 function pct(value: number | null, digits = 1) {

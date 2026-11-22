@@ -263,10 +263,14 @@ def opportunities(
     stmt = stmt.where(AssetSignal.total_score.is_not(None))
     signals = db.scalars(stmt).all()
 
+    from app.services.opportunity_registry import get_unified_score
+
     since = now_cn() - timedelta(days=days)
     cards = []
     for signal in signals:
-        if signal.action in ("暂不判断",):
+        # 核心机会分统一走 registry：ETF 用雷达口径，其余用 legacy_v1
+        unified = get_unified_score(db, signal.symbol)
+        if unified["score"] is None and unified["level"] == "数据不足":
             continue
         inst = db.scalar(select(Instrument).where(Instrument.symbol == signal.symbol))
         cls = db.scalar(select(AssetClass).where(AssetClass.code == signal.asset_class_code))
@@ -291,13 +295,18 @@ def opportunities(
                 "name": inst.name if inst else signal.symbol,
                 "asset_class": cls.name if cls else signal.asset_class_code,
                 "asset_class_code": signal.asset_class_code,
-                "score": signal.total_score,
-                "confidence": signal.confidence,
+                "score": unified["score"],
+                "score_version": unified["score_version"],
+                "score_source": unified["source"],
+                "score_note": unified["note"],
+                "confidence": unified["confidence"],
                 "data_quality": signal.data_quality,
-                "action": signal.action,
+                # action 与 level 同值：过渡期统一为研究优先级，不再各页各说一套
+                "action": unified["level"],
+                "level": unified["level"],
                 "direction": (
-                    "bullish" if (signal.total_score or 50) >= 55 else
-                    "bearish" if (signal.total_score or 50) <= 45 else "mixed"
+                    "bullish" if (unified["score"] or 50) >= 55 else
+                    "bearish" if (unified["score"] or 50) <= 45 else "mixed"
                 ),
                 "as_of": signal.as_of.isoformat(),
                 "summary": driver,
@@ -316,7 +325,9 @@ def opportunities(
                 "decision_hint": "研究排序结果，不构成买卖建议；需结合个人约束确认。",
             }
         )
-    cards.sort(key=lambda c: abs((c["score"] or 50) - 50) * (c["confidence"] or 0), reverse=True)
+    # 排序依据：核心机会分降序（0–100，越高机会越强），同分按数据质量
+    cards.sort(key=lambda c: (c["score"] if c["score"] is not None else -1,
+                              c["confidence"] or 0), reverse=True)
     total = len(cards)
     start = (page - 1) * page_size
     return {
@@ -331,7 +342,8 @@ def opportunities(
                 {"code": c.code, "name": c.name}
                 for c in db.scalars(select(AssetClass).where(AssetClass.level == 1)).all()
             ],
-            "actions": sorted(ACTION_SET | {"维持配置", "观察等待", "暂不判断"}),
+            # 过渡期统一为研究优先级标签（不再混用"买入/降低风险"等交易性措辞）
+            "actions": ["高优先级研究", "重点关注", "观察", "暂不关注"],
         },
     }
 
