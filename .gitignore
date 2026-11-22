@@ -26,3 +26,6 @@ Thumbs.db
 # 日志
 logs/
 *.log
+
+# 本地工作记忆（含服务器地址与内部操作细节，不进代码仓库）
+.workbuddy/memory/
